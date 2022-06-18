@@ -267,25 +267,23 @@ export class MarineVectors extends React.Component {
   }
 
   addCurrentVector () {
-    const currentVector = new MarineVectorsCurrent(this.state.currentVectors.length + 1, 0, 0, 0, 0)
-    this.state.currentVectors.push(currentVector)
-    this.setState({
-      currentVectors: this.state.currentVectors
+    this.setState(function (prevState) {
+      prevState.currentVectors.push(new MarineVectorsCurrent(this.state.currentVectors.length + 1, 0, 0, 0, 0))
+      return { currentVectors: prevState.currentVectors }
     })
   }
 
   addWindVector () {
-    const windVector = new MarineVectorsWind(this.state.windVectors.length + 1, 0, 0, 0, 0, this.state.selectedLeeway)
-    this.state.windVectors.push(windVector)
-    this.setState({
-      windVectors: this.state.windVectors
+    this.setState(function (prevState) {
+      prevState.windVectors.push(new MarineVectorsWind(this.state.windVectors.length + 1, 0, 0, 0, 0, this.state.selectedLeeway))
+      return { windVectors: prevState.windVectors }
     })
   }
 
   updateLeewayData (leewayIdx) {
-    this.setState({
-      selectedLeeway: this.state.leewayData[leewayIdx]
-    })
+    this.setState(prevState => ({
+      selectedLeeway: prevState.leewayData[leewayIdx]
+    }))
   }
 
   updateField (name, value) {
@@ -295,23 +293,29 @@ export class MarineVectors extends React.Component {
   }
 
   updateCurrentData (idx, field, value) {
-    if (idx < this.state.currentVectors.length) {
-      const current = this.state.currentVectors[idx]
-      current[field] = value
-      this.setState({
-        currentVectors: this.state.currentVectors
-      })
-    }
+    this.setState(function (prevState) {
+      if (idx < prevState.currentVectors.length) {
+        const current = prevState.currentVectors[idx]
+        if (field !== '__proto__') {
+          current[field] = value
+          return { currentVectors: prevState.currentVectors }
+        }
+      }
+      return {}
+    })
   }
 
   updateWindData (idx, field, value) {
-    if (idx < this.state.windVectors.length) {
-      const wind = this.state.windVectors[idx]
-      wind[field] = value
-      this.setState({
-        windVectors: this.state.windVectors
-      })
-    }
+    this.setState(function (prevState) {
+      if (idx < this.state.windVectors.length) {
+        const wind = this.state.windVectors[idx]
+        if (field !== '__proto__') {
+          wind[field] = value
+          return { windVectors: this.state.windVectors }
+        }
+      }
+      return {}
+    })
   }
 
   render () {
