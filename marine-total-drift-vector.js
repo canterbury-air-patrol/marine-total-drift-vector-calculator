@@ -208,7 +208,7 @@ class MarineLeewayDisplay extends React.Component {
         <tr><td>Multiplier</td><td>Modifier</td><td>Divergence</td></tr>
       </thead>
       <tbody>
-        <tr><td>{this.props.leeway.modifier}</td><td>{this.props.leeway.modifier}</td><td>{this.props.leeway.divergence}</td></tr>
+        <tr><td>{this.props.leeway.multiplier}</td><td>{this.props.leeway.modifier}</td><td>{this.props.leeway.divergence}</td></tr>
       </tbody>
     </Table>)
   }
