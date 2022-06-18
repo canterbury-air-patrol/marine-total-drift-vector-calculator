@@ -1,0 +1,37 @@
+name: Publish Static page to GH Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pr-for-gh-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install packages
+        run: npm ci
+      - name: Build static site
+        run: npm run build
+      - name: Capture output
+        run: mkdir temp; cp -dR index.html out temp/
+      - name: Switch branch
+        run: git fetch origin; git checkout -b gh-pages origin/gh-pages
+      - name: Restore output
+        run: cp -dR temp/* . 
+      - name: Remove other content
+        run: rm -fr node_modules temp
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: "Update based on main commit ${{ github.sha }}"
+          delete-branch: true
+          base: gh-pages
+          title: Update from main
+          body: "Caused by ${{ github.sha }}"
