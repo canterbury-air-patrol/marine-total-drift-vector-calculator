@@ -4,7 +4,7 @@
   "description": "Marine Total Drift Vector Calculator",
   "main": "marine-total-drift-vector.js",
   "scripts": {
-    "build": "esbuild marinetdv.js --bundle --loader:.js=jsx --outdir=out",
+    "build": "esbuild marinetdv.js --bundle --loader:.js=jsx --outdir=out --minify",
     "check": "eslint *.js",
     "start": "http-server -a localhost -p 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
