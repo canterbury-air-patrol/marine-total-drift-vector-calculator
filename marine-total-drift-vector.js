@@ -294,7 +294,7 @@ export class MarineVectors extends React.Component {
 
   updateCurrentData (idx, field, value) {
     this.setState(function (prevState) {
-      if (idx < prevState.currentVectors.length) {
+      if (idx !== '__proto__' && idx < prevState.currentVectors.length) {
         const current = prevState.currentVectors[idx]
         if (field !== '__proto__') {
           current[field] = value
@@ -307,7 +307,7 @@ export class MarineVectors extends React.Component {
 
   updateWindData (idx, field, value) {
     this.setState(function (prevState) {
-      if (idx < this.state.windVectors.length) {
+      if (idx !== '__proto__' && idx < this.state.windVectors.length) {
         const wind = this.state.windVectors[idx]
         if (field !== '__proto__') {
           wind[field] = value
