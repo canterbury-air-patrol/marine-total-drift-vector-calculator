@@ -1,6 +1,6 @@
 {
   "name": "@canterbury-air-patrol/marine-total-drift-vector",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Marine Total Drift Vector Calculator",
   "main": "marine-total-drift-vector.js",
   "scripts": {
