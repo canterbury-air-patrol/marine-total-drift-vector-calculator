@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/canterbury-air-patrol/marine-total-drift-vector-calculator#readme",
   "devDependencies": {
-    "esbuild": "~0.18.11",
+    "esbuild": "~0.19.2",
     "eslint": "~8.47.0",
     "eslint-config-standard": "~17.1.0",
     "eslint-plugin-import": "~2.28.0",
