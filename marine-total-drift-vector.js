@@ -8,7 +8,13 @@ import Button from 'react-bootstrap/Button'
 import Table from 'react-bootstrap/Table'
 import Form from 'react-bootstrap/Form'
 
+import DateTimePicker from 'react-datetime-picker'
+
 import 'bootstrap/dist/css/bootstrap.min.css'
+
+import 'react-datetime-picker/dist/DateTimePicker.css'
+import 'react-calendar/dist/Calendar.css'
+import 'react-clock/dist/Clock.css'
 
 class MarineTimeVector {
   constructor (idx, timeFrom, timeTo, direction, speed) {
@@ -19,15 +25,8 @@ class MarineTimeVector {
     this.speed = speed
   }
 
-  timeFractions (humanTime) {
-    const minutes = humanTime % 100
-    let hours = (humanTime - minutes) / 100
-    hours += minutes / 60
-    return hours
-  }
-
   getTimeInterval () {
-    return this.timeFractions(this.timeTo) - this.timeFractions(this.timeFrom)
+    return (this.timeTo - this.timeFrom) / (60 * 60 * 1000)
   }
 
   getVectorDirection () {
@@ -120,6 +119,57 @@ InputDataTable.propTypes = {
   targetDescription: PropTypes.string.isRequired
 }
 
+class MarineVectorDataRow extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.handleStartTimeChange = this.handleStartTimeChange.bind(this)
+    this.handleEndTimeChange = this.handleEndTimeChange.bind(this)
+    this.handleDirectionChange = this.handleDirectionChange.bind(this)
+    this.handleSpeedChange = this.handleSpeedChange.bind(this)
+  }
+
+  handleStartTimeChange (value) {
+    this.props.onChange(this.props.idx, 'timeFrom', value)
+  }
+
+  handleEndTimeChange (value) {
+    this.props.onChange(this.props.idx, 'timeTo', value)
+  }
+
+  handleDirectionChange (event) {
+    const target = event.target
+    const value = target.value
+
+    this.props.onChange(this.props.idx, 'direction', value)
+  }
+
+  handleSpeedChange (event) {
+    const target = event.target
+    const value = target.value
+
+    this.props.onChange(this.props.idx, 'speed', value)
+  }
+
+  render () {
+    return (
+    <tr>
+      <td><DateTimePicker onChange={this.handleStartTimeChange} value={this.props.row.timeFrom} format="y-MM-dd HH:mm:ss" /></td>
+      <td><DateTimePicker onChange={this.handleEndTimeChange} value={this.props.row.timeTo} format="y-MM-dd HH:mm:ss" /></td>
+      <td><input type="number" minLength="3" maxLength="3" size="3" value={this.props.row.direction} onChange={this.handleDirectionChange} /></td>
+      <td><input type="number" minLength="1" maxLength="3" size="3" value={this.props.row.speed} onChange={this.handleSpeedChange} /></td>
+      <td>{this.props.row.getTimeInterval()}</td>
+      <td>{this.props.row.getVectorDirection()}</td>
+      <td>{this.props.row.getVectorDistance()}</td>
+    </tr>)
+  }
+}
+MarineVectorDataRow.propTypes = {
+  row: PropTypes.object.isRequired,
+  onChange: PropTypes.func,
+  idx: PropTypes.string.isRequired
+}
+
 class MarineVectorDataTable extends React.Component {
   constructor (props) {
     super(props)
@@ -127,14 +177,7 @@ class MarineVectorDataTable extends React.Component {
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange (event) {
-    const target = event.target
-    const id = target.id
-    const value = target.value
-
-    const idx = id.split('_')[1]
-    const field = id.split('_')[0]
-
+  handleChange (idx, field, value) {
     this.props.dataChanged(idx, field, value)
   }
 
@@ -142,16 +185,7 @@ class MarineVectorDataTable extends React.Component {
     const rows = []
     for (const idx in this.props.data) {
       const row = this.props.data[idx]
-      rows.push((
-        <tr key={idx}>
-          <td><input type="number" min="0" max="2359" size="4" id={'timeFrom_' + idx} value={row.timeFrom} onChange={this.handleChange} /></td>
-          <td><input type="number" minLength="4" maxLength="4" size="4" id={'timeTo_' + idx} value={row.timeTo} onChange={this.handleChange} /></td>
-          <td><input type="number" minLength="3" maxLength="3" size="3" id={'direction_' + idx} value={row.direction} onChange={this.handleChange} /></td>
-          <td><input type="number" minLength="1" maxLength="3" size="3" id={'speed_' + idx} value={row.speed} onChange={this.handleChange} /></td>
-          <td>{row.getTimeInterval()}</td>
-          <td>{row.getVectorDirection()}</td>
-          <td>{row.getVectorDistance()}</td>
-        </tr>))
+      rows.push((<MarineVectorDataRow row={row} onChange={this.handleChange} key={idx} idx={idx} />))
     }
     return (
       <Table striped>
@@ -268,14 +302,30 @@ export class MarineVectors extends React.Component {
 
   addCurrentVector () {
     this.setState(function (prevState) {
-      prevState.currentVectors.push(new MarineVectorsCurrent(this.state.currentVectors.length + 1, 0, 0, 0, 0))
+      let startTime = null
+      if (prevState.currentVectors.length > 0) {
+        startTime = prevState.currentVectors[prevState.currentVectors.length - 1].timeTo
+      }
+      if (startTime === null) {
+        startTime = new Date()
+      }
+      const endTime = new Date()
+      prevState.currentVectors.push(new MarineVectorsCurrent(this.state.currentVectors.length + 1, startTime, endTime, 0, 0))
       return { currentVectors: prevState.currentVectors }
     })
   }
 
   addWindVector () {
     this.setState(function (prevState) {
-      prevState.windVectors.push(new MarineVectorsWind(this.state.windVectors.length + 1, 0, 0, 0, 0, this.state.selectedLeeway))
+      let startTime = null
+      if (prevState.windVectors.length > 0) {
+        startTime = prevState.windVectors[prevState.windVectors.length - 1].timeTo
+      }
+      if (startTime === null) {
+        startTime = new Date()
+      }
+      const endTime = new Date()
+      prevState.windVectors.push(new MarineVectorsWind(this.state.windVectors.length + 1, startTime, endTime, 0, 0, this.state.selectedLeeway))
       return { windVectors: prevState.windVectors }
     })
   }
