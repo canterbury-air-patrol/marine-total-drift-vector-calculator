@@ -356,7 +356,7 @@ export class MarineVectors extends React.Component {
   }
 
   updateWindData (idx, field, value) {
-    this.setState(function (prevState) {
+    this.setState(function () {
       if (idx !== '__proto__' && idx < this.state.windVectors.length) {
         const wind = this.state.windVectors[idx]
         if (field !== '__proto__') {
