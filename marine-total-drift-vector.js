@@ -17,7 +17,7 @@ import 'react-calendar/dist/Calendar.css'
 import 'react-clock/dist/Clock.css'
 
 class MarineTimeVector {
-  constructor (idx, timeFrom, timeTo, direction, speed) {
+  constructor(idx, timeFrom, timeTo, direction, speed) {
     this.idx = idx
     this.timeFrom = timeFrom
     this.timeTo = timeTo
@@ -25,53 +25,52 @@ class MarineTimeVector {
     this.speed = speed
   }
 
-  getTimeInterval () {
+  getTimeInterval() {
     return (this.timeTo - this.timeFrom) / (60 * 60 * 1000)
   }
 
-  getVectorDirection () {
+  getVectorDirection() {
     return parseInt(this.direction)
   }
 
-  getVectorSpeed () {
+  getVectorSpeed() {
     return this.speed
   }
 
-  getVectorDistance () {
+  getVectorDistance() {
     return this.getTimeInterval() * this.getVectorSpeed()
   }
 }
 
-class MarineVectorsCurrent extends MarineTimeVector {
-}
+class MarineVectorsCurrent extends MarineTimeVector {}
 
 class MarineVectorsWind extends MarineTimeVector {
-  constructor (idx, timeFrom, timeTo, windDirection, windSpeed, leewayData) {
+  constructor(idx, timeFrom, timeTo, windDirection, windSpeed, leewayData) {
     super(idx, timeFrom, timeTo, windDirection, windSpeed)
     this.leewayData = leewayData
   }
 
-  updateLeewayData (leewayData) {
+  updateLeewayData(leewayData) {
     this.leewayData = leewayData
   }
 
-  getVectorDirection () {
+  getVectorDirection() {
     return (parseInt(this.direction) + 180) % 360
   }
 
-  getVectorSpeed () {
-    return (super.getVectorSpeed() * this.leewayData.multiplier) + this.leewayData.modifier
+  getVectorSpeed() {
+    return super.getVectorSpeed() * this.leewayData.multiplier + this.leewayData.modifier
   }
 }
 
 class InputDataTable extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange (event) {
+  handleChange(event) {
     const target = event.target
     let value = target.type === 'checkbox' ? target.checked : target.value
     const name = target.name
@@ -81,33 +80,55 @@ class InputDataTable extends React.Component {
     this.props.updateField(name, value)
   }
 
-  render () {
-    return (<form onChange={ this.handleChange }>
-              <table>
-                  <tbody>
-                      <tr>
-                          <td><label htmlFor="subject">Subject</label></td>
-                          <td><input type="text" id="subject" name="subject" defaultValue={this.props.subject}></input></td>
-                      </tr>
-                      <tr>
-                          <td><label htmlFor="LKP">Last Known Position</label></td>
-                          <td><input type="text" id="LKP" name="LKP" defaultValue={this.props.LKP}></input></td>
-                      </tr>
-                      <tr>
-                          <td><label htmlFor="LKPLat">LKP Latitude</label></td>
-                          <td><input type="text" id="LKPLat" name="LKPLat" defaultValue={degreesToDM(this.props.LKPLat, true)}></input></td>
-                      </tr>
-                      <tr>
-                          <td><label htmlFor="LKP_lat">LKP Longitude</label></td>
-                          <td><input type="text" id="LKPLon" name="LKPLon" defaultValue={degreesToDM(this.props.LKPLon, false)}></input></td>
-                      </tr>
-                      <tr>
-                          <td><label htmlFor="targetDescription">Target Description</label></td>
-                          <td><input type="text" id="targetDescription" name="targetDescription" defaultValue={this.props.targetDescription}></input></td>
-                      </tr>
-                  </tbody>
-              </table>
-    </form>)
+  render() {
+    return (
+      <form onChange={this.handleChange}>
+        <table>
+          <tbody>
+            <tr>
+              <td>
+                <label htmlFor="subject">Subject</label>
+              </td>
+              <td>
+                <input type="text" id="subject" name="subject" defaultValue={this.props.subject}></input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="LKP">Last Known Position</label>
+              </td>
+              <td>
+                <input type="text" id="LKP" name="LKP" defaultValue={this.props.LKP}></input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="LKPLat">LKP Latitude</label>
+              </td>
+              <td>
+                <input type="text" id="LKPLat" name="LKPLat" defaultValue={degreesToDM(this.props.LKPLat, true)}></input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="LKP_lat">LKP Longitude</label>
+              </td>
+              <td>
+                <input type="text" id="LKPLon" name="LKPLon" defaultValue={degreesToDM(this.props.LKPLon, false)}></input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="targetDescription">Target Description</label>
+              </td>
+              <td>
+                <input type="text" id="targetDescription" name="targetDescription" defaultValue={this.props.targetDescription}></input>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    )
   }
 }
 InputDataTable.propTypes = {
@@ -120,7 +141,7 @@ InputDataTable.propTypes = {
 }
 
 class MarineVectorDataRow extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.handleStartTimeChange = this.handleStartTimeChange.bind(this)
@@ -129,39 +150,48 @@ class MarineVectorDataRow extends React.Component {
     this.handleSpeedChange = this.handleSpeedChange.bind(this)
   }
 
-  handleStartTimeChange (value) {
+  handleStartTimeChange(value) {
     this.props.onChange(this.props.idx, 'timeFrom', value)
   }
 
-  handleEndTimeChange (value) {
+  handleEndTimeChange(value) {
     this.props.onChange(this.props.idx, 'timeTo', value)
   }
 
-  handleDirectionChange (event) {
+  handleDirectionChange(event) {
     const target = event.target
     const value = target.value
 
     this.props.onChange(this.props.idx, 'direction', value)
   }
 
-  handleSpeedChange (event) {
+  handleSpeedChange(event) {
     const target = event.target
     const value = target.value
 
     this.props.onChange(this.props.idx, 'speed', value)
   }
 
-  render () {
+  render() {
     return (
-    <tr>
-      <td><DateTimePicker onChange={this.handleStartTimeChange} value={this.props.row.timeFrom} format="y-MM-dd HH:mm:ss" /></td>
-      <td><DateTimePicker onChange={this.handleEndTimeChange} value={this.props.row.timeTo} format="y-MM-dd HH:mm:ss" /></td>
-      <td><input type="number" minLength="3" maxLength="3" size="3" value={this.props.row.direction} onChange={this.handleDirectionChange} /></td>
-      <td><input type="number" minLength="1" maxLength="3" size="3" value={this.props.row.speed} onChange={this.handleSpeedChange} /></td>
-      <td>{this.props.row.getTimeInterval()}</td>
-      <td>{this.props.row.getVectorDirection()}</td>
-      <td>{this.props.row.getVectorDistance()}</td>
-    </tr>)
+      <tr>
+        <td>
+          <DateTimePicker onChange={this.handleStartTimeChange} value={this.props.row.timeFrom} format="y-MM-dd HH:mm:ss" />
+        </td>
+        <td>
+          <DateTimePicker onChange={this.handleEndTimeChange} value={this.props.row.timeTo} format="y-MM-dd HH:mm:ss" />
+        </td>
+        <td>
+          <input type="number" minLength="3" maxLength="3" size="3" value={this.props.row.direction} onChange={this.handleDirectionChange} />
+        </td>
+        <td>
+          <input type="number" minLength="1" maxLength="3" size="3" value={this.props.row.speed} onChange={this.handleSpeedChange} />
+        </td>
+        <td>{this.props.row.getTimeInterval()}</td>
+        <td>{this.props.row.getVectorDirection()}</td>
+        <td>{this.props.row.getVectorDistance()}</td>
+      </tr>
+    )
   }
 }
 MarineVectorDataRow.propTypes = {
@@ -171,31 +201,38 @@ MarineVectorDataRow.propTypes = {
 }
 
 class MarineVectorDataTable extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange (idx, field, value) {
+  handleChange(idx, field, value) {
     this.props.dataChanged(idx, field, value)
   }
 
-  render () {
+  render() {
     const rows = []
     for (const idx in this.props.data) {
       const row = this.props.data[idx]
-      rows.push((<MarineVectorDataRow row={row} onChange={this.handleChange} key={idx} idx={idx} />))
+      rows.push(<MarineVectorDataRow row={row} onChange={this.handleChange} key={idx} idx={idx} />)
     }
     return (
       <Table striped>
         <thead>
-          <tr><td>From:</td><td>To:</td><td>Direction (&deg;)</td><td>Speed (knots)</td><td>Time Interval</td><td>Vector Direction (&deg;)</td><td>Vector Distance (NM)</td></tr>
+          <tr>
+            <td>From:</td>
+            <td>To:</td>
+            <td>Direction (&deg;)</td>
+            <td>Speed (knots)</td>
+            <td>Time Interval</td>
+            <td>Vector Direction (&deg;)</td>
+            <td>Vector Distance (NM)</td>
+          </tr>
         </thead>
-        <tbody>
-          {rows}
-        </tbody>
-      </Table>)
+        <tbody>{rows}</tbody>
+      </Table>
+    )
   }
 }
 MarineVectorDataTable.propTypes = {
@@ -204,29 +241,34 @@ MarineVectorDataTable.propTypes = {
 }
 
 class MarineLeewaySelector extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange (event) {
+  handleChange(event) {
     const target = event.target
     const value = target.value
     this.props.leewayChange(value)
   }
 
-  render () {
+  render() {
     const selectObjects = []
     for (const idx in this.props.leewayData) {
       const leeway = this.props.leewayData[idx]
-      selectObjects.push(<option key={idx} value={idx}>{leeway.description}</option>)
+      selectObjects.push(
+        <option key={idx} value={idx}>
+          {leeway.description}
+        </option>
+      )
     }
 
     return (
-    <Form.Select id="leeway_type" name="leeway_type" className="selectpicker" data-live-search="true" onChange={this.handleChange}>
-      {selectObjects}
-    </Form.Select>)
+      <Form.Select id="leeway_type" name="leeway_type" className="selectpicker" data-live-search="true" onChange={this.handleChange}>
+        {selectObjects}
+      </Form.Select>
+    )
   }
 }
 MarineLeewaySelector.propTypes = {
@@ -235,16 +277,25 @@ MarineLeewaySelector.propTypes = {
 }
 
 class MarineLeewayDisplay extends React.Component {
-  render () {
+  render() {
     return (
-    <Table bordered>
-      <thead>
-        <tr><td>Multiplier</td><td>Modifier</td><td>Divergence</td></tr>
-      </thead>
-      <tbody>
-        <tr><td>{this.props.leeway.multiplier}</td><td>{this.props.leeway.modifier}</td><td>{this.props.leeway.divergence}</td></tr>
-      </tbody>
-    </Table>)
+      <Table bordered>
+        <thead>
+          <tr>
+            <td>Multiplier</td>
+            <td>Modifier</td>
+            <td>Divergence</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{this.props.leeway.multiplier}</td>
+            <td>{this.props.leeway.modifier}</td>
+            <td>{this.props.leeway.divergence}</td>
+          </tr>
+        </tbody>
+      </Table>
+    )
   }
 }
 MarineLeewayDisplay.propTypes = {
@@ -252,7 +303,7 @@ MarineLeewayDisplay.propTypes = {
 }
 
 export class MarineVectors extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
@@ -274,14 +325,14 @@ export class MarineVectors extends React.Component {
     this.updateWindData = this.updateWindData.bind(this)
   }
 
-  vectorToCartesian (v) {
+  vectorToCartesian(v) {
     return {
-      x: v.getVectorDistance() * Math.sin(v.getVectorDirection() * Math.PI / 180),
-      y: v.getVectorDistance() * Math.cos(v.getVectorDirection() * Math.PI / 180)
+      x: v.getVectorDistance() * Math.sin((v.getVectorDirection() * Math.PI) / 180),
+      y: v.getVectorDistance() * Math.cos((v.getVectorDirection() * Math.PI) / 180)
     }
   }
 
-  recalculate () {
+  recalculate() {
     let x = 0
     let y = 0
     for (const idx in this.state.currentVectors) {
@@ -297,10 +348,10 @@ export class MarineVectors extends React.Component {
       y += res.y
     }
     this.distance = Math.sqrt(x * x + y * y)
-    this.bearing = ((Math.atan2(x, y) * 180 / Math.PI) + 360) % 360
+    this.bearing = ((Math.atan2(x, y) * 180) / Math.PI + 360) % 360
   }
 
-  addCurrentVector () {
+  addCurrentVector() {
     this.setState(function (prevState) {
       let startTime = null
       if (prevState.currentVectors.length > 0) {
@@ -315,7 +366,7 @@ export class MarineVectors extends React.Component {
     })
   }
 
-  addWindVector () {
+  addWindVector() {
     this.setState(function (prevState) {
       let startTime = null
       if (prevState.windVectors.length > 0) {
@@ -330,19 +381,19 @@ export class MarineVectors extends React.Component {
     })
   }
 
-  updateLeewayData (leewayIdx) {
-    this.setState(prevState => ({
+  updateLeewayData(leewayIdx) {
+    this.setState((prevState) => ({
       selectedLeeway: prevState.leewayData[leewayIdx]
     }))
   }
 
-  updateField (name, value) {
+  updateField(name, value) {
     this.setState({
       [name]: value
     })
   }
 
-  updateCurrentData (idx, field, value) {
+  updateCurrentData(idx, field, value) {
     this.setState(function (prevState) {
       if (idx !== '__proto__' && idx < prevState.currentVectors.length) {
         const current = prevState.currentVectors[idx]
@@ -355,8 +406,8 @@ export class MarineVectors extends React.Component {
     })
   }
 
-  updateWindData (idx, field, value) {
-    this.setState(function (prevState) {
+  updateWindData(idx, field, value) {
+    this.setState(function () {
       if (idx !== '__proto__' && idx < this.state.windVectors.length) {
         const wind = this.state.windVectors[idx]
         if (field !== '__proto__') {
@@ -368,7 +419,7 @@ export class MarineVectors extends React.Component {
     })
   }
 
-  render () {
+  render() {
     this.recalculate()
     return (
       <div>
@@ -378,33 +429,31 @@ export class MarineVectors extends React.Component {
           LKP={this.state.LKP}
           LKPLat={this.state.LKPLat}
           LKPLon={this.state.LKPLon}
-          targetDescription={this.state.targetDescription} />
-        <MarineLeewaySelector
-          leewayData={this.state.leewayData}
-          selected={this.state.selectedLeeway}
-          leewayChange={this.updateLeewayData}
-          />
-        <MarineLeewayDisplay
-          leeway={this.state.selectedLeeway}
-          />
-        <br />Current Data:
-        <MarineVectorDataTable
-          data={this.state.currentVectors}
-          dataChanged={this.updateCurrentData}
-          />
-        <Button onClick={this.addCurrentVector}>Add</Button>
-        <br />Wind Data:
-        <MarineVectorDataTable
-          data={this.state.windVectors}
-          dataChanged={this.updateWindData}
+          targetDescription={this.state.targetDescription}
         />
+        <MarineLeewaySelector leewayData={this.state.leewayData} selected={this.state.selectedLeeway} leewayChange={this.updateLeewayData} />
+        <MarineLeewayDisplay leeway={this.state.selectedLeeway} />
+        <br />
+        Current Data:
+        <MarineVectorDataTable data={this.state.currentVectors} dataChanged={this.updateCurrentData} />
+        <Button onClick={this.addCurrentVector}>Add</Button>
+        <br />
+        Wind Data:
+        <MarineVectorDataTable data={this.state.windVectors} dataChanged={this.updateWindData} />
         <Button onClick={this.addWindVector}>Add</Button>
         <table>
           <tbody>
-          <tr><td>Distance</td><td>{ this.distance }</td></tr>
-          <tr><td>Bearing</td><td>{ this.bearing }</td></tr>
+            <tr>
+              <td>Distance</td>
+              <td>{this.distance}</td>
+            </tr>
+            <tr>
+              <td>Bearing</td>
+              <td>{this.bearing}</td>
+            </tr>
           </tbody>
         </table>
-      </div>)
+      </div>
+    )
   }
 }
