@@ -1,7 +1,6 @@
-import { SearchObjectLeeway } from '@canterbury-air-patrol/marine-leeway-data'
+import { SearchObjectLeeway, LeewayDataInterface } from '@canterbury-air-patrol/marine-leeway-data'
 
 import React from 'react'
-import PropTypes from 'prop-types'
 import { degreesToDM, DMToDegrees } from '@canterbury-air-patrol/deg-converter'
 
 import Button from 'react-bootstrap/Button'
@@ -17,27 +16,33 @@ import 'react-calendar/dist/Calendar.css'
 import 'react-clock/dist/Clock.css'
 
 class MarineTimeVector {
-  constructor(idx, timeFrom, timeTo, direction, speed) {
+  idx: number
+  timeFrom: Date
+  timeTo: Date
+  direction: number
+  speed: number
+
+  constructor(idx: number, timeFrom: Date, timeTo: Date, direction: number | string, speed: number) {
     this.idx = idx
     this.timeFrom = timeFrom
     this.timeTo = timeTo
-    this.direction = direction
+    this.direction = typeof direction == 'number' ? direction : parseInt(direction)
     this.speed = speed
   }
 
-  getTimeInterval() {
-    return (this.timeTo - this.timeFrom) / (60 * 60 * 1000)
+  getTimeInterval(): number {
+    return (this.timeTo.getTime() - this.timeFrom.getTime()) / (60 * 60 * 1000)
   }
 
-  getVectorDirection() {
-    return parseInt(this.direction)
+  getVectorDirection(): number {
+    return this.direction
   }
 
-  getVectorSpeed() {
+  getVectorSpeed(): number {
     return this.speed
   }
 
-  getVectorDistance() {
+  getVectorDistance(): number {
     return this.getTimeInterval() * this.getVectorSpeed()
   }
 }
@@ -45,32 +50,43 @@ class MarineTimeVector {
 class MarineVectorsCurrent extends MarineTimeVector {}
 
 class MarineVectorsWind extends MarineTimeVector {
-  constructor(idx, timeFrom, timeTo, windDirection, windSpeed, leewayData) {
+  leewayData: LeewayDataInterface
+
+  constructor(idx: number, timeFrom: Date, timeTo: Date, windDirection: number, windSpeed: number, leewayData: LeewayDataInterface) {
     super(idx, timeFrom, timeTo, windDirection, windSpeed)
     this.leewayData = leewayData
   }
 
-  updateLeewayData(leewayData) {
+  updateLeewayData(leewayData: LeewayDataInterface) {
     this.leewayData = leewayData
   }
 
-  getVectorDirection() {
-    return (parseInt(this.direction) + 180) % 360
+  getVectorDirection(): number {
+    return (this.direction + 180) % 360
   }
 
-  getVectorSpeed() {
+  getVectorSpeed(): number {
     return super.getVectorSpeed() * this.leewayData.multiplier + this.leewayData.modifier
   }
 }
 
-class InputDataTable extends React.Component {
-  constructor(props) {
+interface InputDataTableProps {
+  updateField: (field: string, value: string) => void
+  subject: string
+  LKP: string
+  LKPLat: number
+  LKPLon: number
+  targetDescription: string
+}
+
+class InputDataTable extends React.Component<InputDataTableProps, never> {
+  constructor(props: InputDataTableProps) {
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange(event) {
+  handleChange(event: React.ChangeEvent<HTMLFormElement>) {
     const target = event.target
     let value = target.type === 'checkbox' ? target.checked : target.value
     const name = target.name
@@ -131,17 +147,17 @@ class InputDataTable extends React.Component {
     )
   }
 }
-InputDataTable.propTypes = {
-  updateField: PropTypes.func.isRequired,
-  subject: PropTypes.string.isRequired,
-  LKP: PropTypes.string.isRequired,
-  LKPLat: PropTypes.number.isRequired,
-  LKPLon: PropTypes.number.isRequired,
-  targetDescription: PropTypes.string.isRequired
+
+interface MarineVectorDataRowProps {
+  row: MarineTimeVector
+  onChangeStartTime?: (assetIdx: number, value: Date) => void
+  onChangeEndTime?: (assetIdx: number, value: Date) => void
+  onChange?: (assetIdx: number, field: string, value: string) => void
+  idx: number
 }
 
-class MarineVectorDataRow extends React.Component {
-  constructor(props) {
+class MarineVectorDataRow extends React.Component<MarineVectorDataRowProps, never> {
+  constructor(props: MarineVectorDataRowProps) {
     super(props)
 
     this.handleStartTimeChange = this.handleStartTimeChange.bind(this)
@@ -150,26 +166,34 @@ class MarineVectorDataRow extends React.Component {
     this.handleSpeedChange = this.handleSpeedChange.bind(this)
   }
 
-  handleStartTimeChange(value) {
-    this.props.onChange(this.props.idx, 'timeFrom', value)
+  handleStartTimeChange(value: Date | null) {
+    if (value && this.props.onChangeStartTime) {
+      this.props.onChangeStartTime(this.props.idx, value)
+    }
   }
 
-  handleEndTimeChange(value) {
-    this.props.onChange(this.props.idx, 'timeTo', value)
+  handleEndTimeChange(value: Date | null) {
+    if (value && this.props.onChangeEndTime) {
+      this.props.onChangeEndTime(this.props.idx, value)
+    }
   }
 
-  handleDirectionChange(event) {
+  handleDirectionChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target
     const value = target.value
 
-    this.props.onChange(this.props.idx, 'direction', value)
+    if (this.props.onChange) {
+      this.props.onChange(this.props.idx, 'direction', value)
+    }
   }
 
-  handleSpeedChange(event) {
+  handleSpeedChange(event: React.ChangeEvent<HTMLInputElement>) {
     const target = event.target
     const value = target.value
 
-    this.props.onChange(this.props.idx, 'speed', value)
+    if (this.props.onChange) {
+      this.props.onChange(this.props.idx, 'speed', value)
+    }
   }
 
   render() {
@@ -182,10 +206,10 @@ class MarineVectorDataRow extends React.Component {
           <DateTimePicker onChange={this.handleEndTimeChange} value={this.props.row.timeTo} format="y-MM-dd HH:mm:ss" />
         </td>
         <td>
-          <input type="number" minLength="3" maxLength="3" size="3" value={this.props.row.direction} onChange={this.handleDirectionChange} />
+          <input type="number" minLength={3} maxLength={3} size={3} value={this.props.row.direction} onChange={this.handleDirectionChange} />
         </td>
         <td>
-          <input type="number" minLength="1" maxLength="3" size="3" value={this.props.row.speed} onChange={this.handleSpeedChange} />
+          <input type="number" minLength={1} maxLength={3} size={3} value={this.props.row.speed} onChange={this.handleSpeedChange} />
         </td>
         <td>{this.props.row.getTimeInterval()}</td>
         <td>{this.props.row.getVectorDirection()}</td>
@@ -194,28 +218,47 @@ class MarineVectorDataRow extends React.Component {
     )
   }
 }
-MarineVectorDataRow.propTypes = {
-  row: PropTypes.object.isRequired,
-  onChange: PropTypes.func,
-  idx: PropTypes.string.isRequired
+
+interface MarineVectorDataTableProps {
+  data: Array<MarineTimeVector>
+  dataChanged: (idx: number, field: string, value: number) => void
+  dataChangedStartTime: (idx: number, value: Date) => void
+  dataChangedEndTime: (idx: number, value: Date) => void
 }
 
-class MarineVectorDataTable extends React.Component {
-  constructor(props) {
+class MarineVectorDataTable extends React.Component<MarineVectorDataTableProps, never> {
+  constructor(props: MarineVectorDataTableProps) {
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange(idx, field, value) {
-    this.props.dataChanged(idx, field, value)
+  handleChange(idx: number, field: string, value: string) {
+    this.props.dataChanged(idx, field, parseInt(value))
+  }
+
+  handleStartTimeChange(idx: number, value: Date) {
+    this.props.dataChangedStartTime(idx, value)
+  }
+
+  handleEndTimeChange(idx: number, value: Date) {
+    this.props.dataChangedEndTime(idx, value)
   }
 
   render() {
     const rows = []
     for (const idx in this.props.data) {
       const row = this.props.data[idx]
-      rows.push(<MarineVectorDataRow row={row} onChange={this.handleChange} key={idx} idx={idx} />)
+      rows.push(
+        <MarineVectorDataRow
+          row={row}
+          onChange={this.handleChange}
+          onChangeEndTime={this.handleEndTimeChange}
+          onChangeStartTime={this.handleStartTimeChange}
+          key={idx}
+          idx={parseInt(idx)}
+        />
+      )
     }
     return (
       <Table striped>
@@ -235,22 +278,23 @@ class MarineVectorDataTable extends React.Component {
     )
   }
 }
-MarineVectorDataTable.propTypes = {
-  data: PropTypes.array.isRequired,
-  dataChanged: PropTypes.func.isRequired
+
+interface MarineLeewaySelectorProps {
+  leewayData: Array<LeewayDataInterface>
+  leewayChange: (value: number) => void
 }
 
-class MarineLeewaySelector extends React.Component {
-  constructor(props) {
+class MarineLeewaySelector extends React.Component<MarineLeewaySelectorProps, never> {
+  constructor(props: MarineLeewaySelectorProps) {
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange(event) {
+  handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const target = event.target
     const value = target.value
-    this.props.leewayChange(value)
+    this.props.leewayChange(parseInt(value))
   }
 
   render() {
@@ -271,12 +315,12 @@ class MarineLeewaySelector extends React.Component {
     )
   }
 }
-MarineLeewaySelector.propTypes = {
-  leewayData: PropTypes.array.isRequired,
-  leewayChange: PropTypes.func.isRequired
+
+interface MarineLeewayDisplayProps {
+  leeway: LeewayDataInterface
 }
 
-class MarineLeewayDisplay extends React.Component {
+class MarineLeewayDisplay extends React.Component<MarineLeewayDisplayProps, never> {
   render() {
     return (
       <Table bordered>
@@ -298,13 +342,27 @@ class MarineLeewayDisplay extends React.Component {
     )
   }
 }
-MarineLeewayDisplay.propTypes = {
-  leeway: PropTypes.object.isRequired
+
+interface MarineVectorsState {
+  leewayData: Array<LeewayDataInterface>
+  selectedLeeway: LeewayDataInterface
+  currentVectors: Array<MarineVectorsCurrent>
+  windVectors: Array<MarineVectorsWind>
+  subject: string
+  LKP: string
+  LKPLat: number
+  LKPLon: number
+  targetDescription: string
 }
 
-export class MarineVectors extends React.Component {
-  constructor(props) {
+export class MarineVectors extends React.Component<object, MarineVectorsState> {
+  distance: number
+  bearing: number
+
+  constructor(props: object) {
     super(props)
+    this.distance = 0
+    this.bearing = 0
 
     this.state = {
       leewayData: SearchObjectLeeway,
@@ -322,10 +380,14 @@ export class MarineVectors extends React.Component {
     this.addCurrentVector = this.addCurrentVector.bind(this)
     this.addWindVector = this.addWindVector.bind(this)
     this.updateCurrentData = this.updateCurrentData.bind(this)
+    this.updateCurrentTimeFrom = this.updateCurrentTimeFrom.bind(this)
+    this.updateCurrentTimeTo = this.updateCurrentTimeTo.bind(this)
     this.updateWindData = this.updateWindData.bind(this)
+    this.updateWindTimeFrom = this.updateWindTimeFrom.bind(this)
+    this.updateWindTimeTo = this.updateWindTimeTo.bind(this)
   }
 
-  vectorToCartesian(v) {
+  vectorToCartesian(v: MarineTimeVector) {
     return {
       x: v.getVectorDistance() * Math.sin((v.getVectorDirection() * Math.PI) / 180),
       y: v.getVectorDistance() * Math.cos((v.getVectorDirection() * Math.PI) / 180)
@@ -361,7 +423,7 @@ export class MarineVectors extends React.Component {
         startTime = new Date()
       }
       const endTime = new Date()
-      prevState.currentVectors.push(new MarineVectorsCurrent(this.state.currentVectors.length + 1, startTime, endTime, 0, 0))
+      prevState.currentVectors.push(new MarineVectorsCurrent(prevState.currentVectors.length + 1, startTime, endTime, 0, 0))
       return { currentVectors: prevState.currentVectors }
     })
   }
@@ -376,46 +438,108 @@ export class MarineVectors extends React.Component {
         startTime = new Date()
       }
       const endTime = new Date()
-      prevState.windVectors.push(new MarineVectorsWind(this.state.windVectors.length + 1, startTime, endTime, 0, 0, this.state.selectedLeeway))
+      prevState.windVectors.push(new MarineVectorsWind(prevState.windVectors.length + 1, startTime, endTime, 0, 0, prevState.selectedLeeway))
       return { windVectors: prevState.windVectors }
     })
   }
 
-  updateLeewayData(leewayIdx) {
+  updateLeewayData(leewayIdx: number) {
     this.setState((prevState) => ({
       selectedLeeway: prevState.leewayData[leewayIdx]
     }))
   }
 
-  updateField(name, value) {
-    this.setState({
-      [name]: value
-    })
+  updateField(name: string, value: string | number) {
+    switch (name) {
+      case 'subject':
+        this.setState({
+          subject: String(value)
+        })
+        break
+      case 'LKP':
+        this.setState({
+          LKP: String(value)
+        })
+        break
+      case 'LKPLat':
+        this.setState({
+          LKPLat: typeof value == 'number' ? value : parseFloat(value)
+        })
+        break
+      case 'LKPLon':
+        this.setState({
+          LKPLon: typeof value == 'number' ? value : parseFloat(value)
+        })
+        break
+      case 'targetDescription':
+        this.setState({
+          targetDescription: String(value)
+        })
+        break
+    }
   }
 
-  updateCurrentData(idx, field, value) {
-    this.setState(function (prevState) {
-      if (idx !== '__proto__' && idx < prevState.currentVectors.length) {
-        const current = prevState.currentVectors[idx]
-        if (field !== '__proto__') {
+  updateCurrentData(idx: number, field: string, value: number) {
+    if (field === 'direction' || field === 'speed') {
+      this.setState(function (prevState) {
+        if (idx < prevState.currentVectors.length) {
+          const current = prevState.currentVectors[idx]
           current[field] = value
-          return { currentVectors: prevState.currentVectors }
         }
+        return { currentVectors: prevState.currentVectors }
+      })
+    }
+  }
+
+  updateCurrentTimeFrom(idx: number, value: Date) {
+    this.setState(function (prevState) {
+      if (idx < prevState.currentVectors.length) {
+        const current = prevState.currentVectors[idx]
+        current.timeFrom = value
       }
-      return {}
+      return { currentVectors: prevState.currentVectors }
     })
   }
 
-  updateWindData(idx, field, value) {
-    this.setState(function () {
-      if (idx !== '__proto__' && idx < this.state.windVectors.length) {
-        const wind = this.state.windVectors[idx]
-        if (field !== '__proto__') {
-          wind[field] = value
-          return { windVectors: this.state.windVectors }
-        }
+  updateCurrentTimeTo(idx: number, value: Date) {
+    this.setState(function (prevState) {
+      if (idx < prevState.currentVectors.length) {
+        const current = prevState.currentVectors[idx]
+        current.timeTo = value
       }
-      return {}
+      return { currentVectors: prevState.currentVectors }
+    })
+  }
+
+  updateWindData(idx: number, field: string, value: number) {
+    if (field === 'direction' || field === 'speed') {
+      this.setState(function (prevState) {
+        if (idx < prevState.windVectors.length) {
+          const wind = prevState.windVectors[idx]
+          wind[field] = value
+        }
+        return { windVectors: prevState.windVectors }
+      })
+    }
+  }
+
+  updateWindTimeFrom(idx: number, value: Date) {
+    this.setState(function (prevState) {
+      if (idx < prevState.windVectors.length) {
+        const wind = prevState.windVectors[idx]
+        wind.timeFrom = value
+      }
+      return { windVectors: prevState.windVectors }
+    })
+  }
+
+  updateWindTimeTo(idx: number, value: Date) {
+    this.setState(function (prevState) {
+      if (idx < prevState.windVectors.length) {
+        const wind = prevState.windVectors[idx]
+        wind.timeTo = value
+      }
+      return { windVectors: prevState.windVectors }
     })
   }
 
@@ -431,15 +555,25 @@ export class MarineVectors extends React.Component {
           LKPLon={this.state.LKPLon}
           targetDescription={this.state.targetDescription}
         />
-        <MarineLeewaySelector leewayData={this.state.leewayData} selected={this.state.selectedLeeway} leewayChange={this.updateLeewayData} />
+        <MarineLeewaySelector leewayData={this.state.leewayData} leewayChange={this.updateLeewayData} />
         <MarineLeewayDisplay leeway={this.state.selectedLeeway} />
         <br />
         Current Data:
-        <MarineVectorDataTable data={this.state.currentVectors} dataChanged={this.updateCurrentData} />
+        <MarineVectorDataTable
+          data={this.state.currentVectors}
+          dataChanged={this.updateCurrentData}
+          dataChangedStartTime={this.updateCurrentTimeFrom}
+          dataChangedEndTime={this.updateCurrentTimeTo}
+        />
         <Button onClick={this.addCurrentVector}>Add</Button>
         <br />
         Wind Data:
-        <MarineVectorDataTable data={this.state.windVectors} dataChanged={this.updateWindData} />
+        <MarineVectorDataTable
+          data={this.state.windVectors}
+          dataChanged={this.updateWindData}
+          dataChangedStartTime={this.updateWindTimeFrom}
+          dataChangedEndTime={this.updateWindTimeTo}
+        />
         <Button onClick={this.addWindVector}>Add</Button>
         <table>
           <tbody>
