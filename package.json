@@ -1,6 +1,6 @@
 {
   "name": "@canterbury-air-patrol/marine-total-drift-vector",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "Marine Total Drift Vector Calculator",
   "main": "dist/marine-total-drift-vector.js",
   "modules": "dist/marine-total-drift-vector.mjs",
@@ -9,7 +9,8 @@
     "dist/"
   ],
   "scripts": {
-    "build": "tsup marinetdv.tsx marine-total-drift-vector.tsx",
+    "build": "esbuild marinetdv.tsx --bundle --loader:.js=jsx --outdir=out --minify",
+    "bundle": "tsup marinetdv.tsx marine-total-drift-vector.tsx",
     "check": "eslint *.tsx && prettier -c *.tsx",
     "start": "http-server -a localhost -p 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
