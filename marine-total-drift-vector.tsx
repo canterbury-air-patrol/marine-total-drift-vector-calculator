@@ -87,9 +87,9 @@ class InputDataTable extends React.Component<InputDataTableProps, never> {
   }
 
   handleChange(event: React.ChangeEvent<HTMLFormElement>) {
-    const target = event.target
+    const { target } = event
     let value = target.type === 'checkbox' ? target.checked : target.value
-    const name = target.name
+    const { name } = target
     if (name === 'LKP_lat' || name === 'LKP_lon') {
       value = DMToDegrees(value)
     }
@@ -179,8 +179,7 @@ class MarineVectorDataRow extends React.Component<MarineVectorDataRowProps, neve
   }
 
   handleDirectionChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target
-    const value = target.value
+    const { value } = event.target
 
     if (this.props.onChange) {
       this.props.onChange(this.props.idx, 'direction', value)
@@ -188,8 +187,7 @@ class MarineVectorDataRow extends React.Component<MarineVectorDataRowProps, neve
   }
 
   handleSpeedChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target
-    const value = target.value
+    const { value } = event.target
 
     if (this.props.onChange) {
       this.props.onChange(this.props.idx, 'speed', value)
@@ -231,6 +229,8 @@ class MarineVectorDataTable extends React.Component<MarineVectorDataTableProps, 
     super(props)
 
     this.handleChange = this.handleChange.bind(this)
+    this.handleStartTimeChange = this.handleStartTimeChange.bind(this)
+    this.handleEndTimeChange = this.handleEndTimeChange.bind(this)
   }
 
   handleChange(idx: number, field: string, value: string) {
@@ -292,8 +292,7 @@ class MarineLeewaySelector extends React.Component<MarineLeewaySelectorProps, ne
   }
 
   handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const target = event.target
-    const value = target.value
+    const { value } = event.target
     this.props.leewayChange(parseInt(value))
   }
 
@@ -353,9 +352,81 @@ interface MarineVectorsState {
   LKPLat: number
   LKPLon: number
   targetDescription: string
+  distance: number
+  bearing: number
 }
 
-export class MarineVectors extends React.Component<object, MarineVectorsState> {
+interface MarineVectorsProps {
+  data: MarineVectorsState
+  actions: {
+    updateField: (field: string, value: string) => void
+    updateLeewayData: (leewayIdx: number) => void
+    updateCurrentData: (idx: number, field: string, value: number) => void
+    updateCurrentTimeFrom: (idx: number, value: Date) => void
+    updateCurrentTimeTo: (idx: number, value: Date) => void
+    addCurrentVector: () => void
+    updateWindData: (idx: number, field: string, value: number) => void
+    updateWindTimeFrom: (idx: number, value: Date) => void
+    updateWindTimeTo: (idx: number, value: Date) => void
+    addWindVector: () => void
+  }
+}
+
+class MarineVectorsDisplay extends React.Component<MarineVectorsProps> {
+  constructor(props: MarineVectorsProps) {
+    super(props)
+  }
+
+  render() {
+    const { data, actions } = this.props
+    return (
+      <div>
+        <InputDataTable
+          updateField={actions.updateField}
+          subject={data.subject}
+          LKP={data.LKP}
+          LKPLat={data.LKPLat}
+          LKPLon={data.LKPLon}
+          targetDescription={data.targetDescription}
+        />
+        <MarineLeewaySelector leewayData={data.leewayData} leewayChange={actions.updateLeewayData} />
+        <MarineLeewayDisplay leeway={data.selectedLeeway} />
+        <br />
+        Current Data:
+        <MarineVectorDataTable
+          data={data.currentVectors}
+          dataChanged={actions.updateCurrentData}
+          dataChangedStartTime={actions.updateCurrentTimeFrom}
+          dataChangedEndTime={actions.updateCurrentTimeTo}
+        />
+        <Button onClick={actions.addCurrentVector}>Add</Button>
+        <br />
+        Wind Data:
+        <MarineVectorDataTable
+          data={data.windVectors}
+          dataChanged={actions.updateWindData}
+          dataChangedStartTime={actions.updateWindTimeFrom}
+          dataChangedEndTime={actions.updateWindTimeTo}
+        />
+        <Button onClick={actions.addWindVector}>Add</Button>
+        <table>
+          <tbody>
+            <tr>
+              <td>Distance</td>
+              <td>{data.distance}</td>
+            </tr>
+            <tr>
+              <td>Bearing</td>
+              <td>{data.bearing}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+}
+
+class MarineVectors extends React.Component<object, MarineVectorsState> {
   distance: number
   bearing: number
 
@@ -373,7 +444,9 @@ export class MarineVectors extends React.Component<object, MarineVectorsState> {
       LKP: '',
       LKPLat: 0.0,
       LKPLon: 0.0,
-      targetDescription: ''
+      targetDescription: '',
+      distance: 0,
+      bearing: 0
     }
 
     this.updateLeewayData = this.updateLeewayData.bind(this)
@@ -545,49 +618,20 @@ export class MarineVectors extends React.Component<object, MarineVectorsState> {
 
   render() {
     this.recalculate()
-    return (
-      <div>
-        <InputDataTable
-          updateField={this.updateField}
-          subject={this.state.subject}
-          LKP={this.state.LKP}
-          LKPLat={this.state.LKPLat}
-          LKPLon={this.state.LKPLon}
-          targetDescription={this.state.targetDescription}
-        />
-        <MarineLeewaySelector leewayData={this.state.leewayData} leewayChange={this.updateLeewayData} />
-        <MarineLeewayDisplay leeway={this.state.selectedLeeway} />
-        <br />
-        Current Data:
-        <MarineVectorDataTable
-          data={this.state.currentVectors}
-          dataChanged={this.updateCurrentData}
-          dataChangedStartTime={this.updateCurrentTimeFrom}
-          dataChangedEndTime={this.updateCurrentTimeTo}
-        />
-        <Button onClick={this.addCurrentVector}>Add</Button>
-        <br />
-        Wind Data:
-        <MarineVectorDataTable
-          data={this.state.windVectors}
-          dataChanged={this.updateWindData}
-          dataChangedStartTime={this.updateWindTimeFrom}
-          dataChangedEndTime={this.updateWindTimeTo}
-        />
-        <Button onClick={this.addWindVector}>Add</Button>
-        <table>
-          <tbody>
-            <tr>
-              <td>Distance</td>
-              <td>{this.distance}</td>
-            </tr>
-            <tr>
-              <td>Bearing</td>
-              <td>{this.bearing}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    )
+    const actions = {
+      updateField: this.updateField,
+      updateCurrentData: this.updateCurrentData,
+      updateCurrentTimeFrom: this.updateCurrentTimeFrom,
+      updateCurrentTimeTo: this.updateCurrentTimeTo,
+      updateLeewayData: this.updateLeewayData,
+      updateWindData: this.updateWindData,
+      updateWindTimeFrom: this.updateWindTimeFrom,
+      updateWindTimeTo: this.updateWindTimeTo,
+      addCurrentVector: this.addCurrentVector,
+      addWindVector: this.addWindVector
+    }
+    return <MarineVectorsDisplay data={{ ...this.state, distance: this.distance, bearing: this.bearing }} actions={actions} />
   }
 }
+
+export { MarineVectors, MarineVectorsDisplay }
