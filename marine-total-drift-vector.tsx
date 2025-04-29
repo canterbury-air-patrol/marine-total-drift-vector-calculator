@@ -79,73 +79,65 @@ interface InputDataTableProps {
   targetDescription: string
 }
 
-class InputDataTable extends React.Component<InputDataTableProps, never> {
-  constructor(props: InputDataTableProps) {
-    super(props)
-
-    this.handleChange = this.handleChange.bind(this)
-  }
-
-  handleChange(event: React.ChangeEvent<HTMLFormElement>) {
-    const target = event.target
+const InputDataTable: React.FC<InputDataTableProps> = (props) => {
+  const handleChange = (event: React.ChangeEvent<HTMLFormElement>) => {
+    const { target } = event
     let value = target.type === 'checkbox' ? target.checked : target.value
-    const name = target.name
+    const { name } = target
     if (name === 'LKP_lat' || name === 'LKP_lon') {
       value = DMToDegrees(value)
     }
-    this.props.updateField(name, value)
+    props.updateField(name, value)
   }
 
-  render() {
-    return (
-      <form onChange={this.handleChange}>
-        <table>
-          <tbody>
-            <tr>
-              <td>
-                <label htmlFor="subject">Subject</label>
-              </td>
-              <td>
-                <input type="text" id="subject" name="subject" defaultValue={this.props.subject}></input>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label htmlFor="LKP">Last Known Position</label>
-              </td>
-              <td>
-                <input type="text" id="LKP" name="LKP" defaultValue={this.props.LKP}></input>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label htmlFor="LKPLat">LKP Latitude</label>
-              </td>
-              <td>
-                <input type="text" id="LKPLat" name="LKPLat" defaultValue={degreesToDM(this.props.LKPLat, true)}></input>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label htmlFor="LKP_lat">LKP Longitude</label>
-              </td>
-              <td>
-                <input type="text" id="LKPLon" name="LKPLon" defaultValue={degreesToDM(this.props.LKPLon, false)}></input>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label htmlFor="targetDescription">Target Description</label>
-              </td>
-              <td>
-                <input type="text" id="targetDescription" name="targetDescription" defaultValue={this.props.targetDescription}></input>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-    )
-  }
+  return (
+    <form onChange={handleChange}>
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <label htmlFor="subject">Subject</label>
+            </td>
+            <td>
+              <input type="text" id="subject" name="subject" defaultValue={props.subject}></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label htmlFor="LKP">Last Known Position</label>
+            </td>
+            <td>
+              <input type="text" id="LKP" name="LKP" defaultValue={props.LKP}></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label htmlFor="LKPLat">LKP Latitude</label>
+            </td>
+            <td>
+              <input type="text" id="LKPLat" name="LKPLat" defaultValue={degreesToDM(props.LKPLat, true)}></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label htmlFor="LKPLon">LKP Longitude</label>
+            </td>
+            <td>
+              <input type="text" id="LKPLon" name="LKPLon" defaultValue={degreesToDM(props.LKPLon, false)}></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label htmlFor="targetDescription">Target Description</label>
+            </td>
+            <td>
+              <input type="text" id="targetDescription" name="targetDescription" defaultValue={props.targetDescription}></input>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  )
 }
 
 interface MarineVectorDataRowProps {
@@ -156,127 +148,68 @@ interface MarineVectorDataRowProps {
   idx: number
 }
 
-class MarineVectorDataRow extends React.Component<MarineVectorDataRowProps, never> {
-  constructor(props: MarineVectorDataRowProps) {
-    super(props)
-
-    this.handleStartTimeChange = this.handleStartTimeChange.bind(this)
-    this.handleEndTimeChange = this.handleEndTimeChange.bind(this)
-    this.handleDirectionChange = this.handleDirectionChange.bind(this)
-    this.handleSpeedChange = this.handleSpeedChange.bind(this)
-  }
-
-  handleStartTimeChange(value: Date | null) {
-    if (value && this.props.onChangeStartTime) {
-      this.props.onChangeStartTime(this.props.idx, value)
+const MarineVectorDataRow: React.FC<MarineVectorDataRowProps> = (props) => {
+  const handleStartTimeChange = (value: Date | null) => {
+    if (value && props.onChangeStartTime) {
+      props.onChangeStartTime(props.idx, value)
     }
   }
 
-  handleEndTimeChange(value: Date | null) {
-    if (value && this.props.onChangeEndTime) {
-      this.props.onChangeEndTime(this.props.idx, value)
+  const handleEndTimeChange = (value: Date | null) => {
+    if (value && props.onChangeEndTime) {
+      props.onChangeEndTime(props.idx, value)
     }
   }
 
-  handleDirectionChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target
-    const value = target.value
-
-    if (this.props.onChange) {
-      this.props.onChange(this.props.idx, 'direction', value)
-    }
-  }
-
-  handleSpeedChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const target = event.target
-    const value = target.value
-
-    if (this.props.onChange) {
-      this.props.onChange(this.props.idx, 'speed', value)
-    }
-  }
-
-  render() {
-    return (
-      <tr>
-        <td>
-          <DateTimePicker onChange={this.handleStartTimeChange} value={this.props.row.timeFrom} format="y-MM-dd HH:mm:ss" />
-        </td>
-        <td>
-          <DateTimePicker onChange={this.handleEndTimeChange} value={this.props.row.timeTo} format="y-MM-dd HH:mm:ss" />
-        </td>
-        <td>
-          <input type="number" minLength={3} maxLength={3} size={3} value={this.props.row.direction} onChange={this.handleDirectionChange} />
-        </td>
-        <td>
-          <input type="number" minLength={1} maxLength={3} size={3} value={this.props.row.speed} onChange={this.handleSpeedChange} />
-        </td>
-        <td>{this.props.row.getTimeInterval()}</td>
-        <td>{this.props.row.getVectorDirection()}</td>
-        <td>{this.props.row.getVectorDistance()}</td>
-      </tr>
-    )
-  }
+  return (
+    <tr>
+      <td>
+        <DateTimePicker onChange={handleStartTimeChange} value={props.row.timeFrom} format="y-MM-dd HH:mm:ss" />
+      </td>
+      <td>
+        <DateTimePicker onChange={handleEndTimeChange} value={props.row.timeTo} format="y-MM-dd HH:mm:ss" />
+      </td>
+      <td>
+        <input type="number" minLength={3} maxLength={3} size={3} value={props.row.direction} onChange={(e) => props.onChange?.(props.idx, 'direction', e.target.value)} />
+      </td>
+      <td>
+        <input type="number" minLength={1} maxLength={3} size={3} value={props.row.speed} onChange={(e) => props.onChange?.(props.idx, 'speed', e.target.value)} />
+      </td>
+      <td>{props.row.getTimeInterval()}</td>
+      <td>{props.row.getVectorDirection()}</td>
+      <td>{props.row.getVectorDistance()}</td>
+    </tr>
+  )
 }
 
 interface MarineVectorDataTableProps {
   data: Array<MarineTimeVector>
-  dataChanged: (idx: number, field: string, value: number) => void
+  dataChanged: (idx: number, field: string, value: string) => void
   dataChangedStartTime: (idx: number, value: Date) => void
   dataChangedEndTime: (idx: number, value: Date) => void
 }
 
-class MarineVectorDataTable extends React.Component<MarineVectorDataTableProps, never> {
-  constructor(props: MarineVectorDataTableProps) {
-    super(props)
+const MarineVectorDataTable: React.FC<MarineVectorDataTableProps> = (props) => {
+  const rows = props.data.map((row, idx) => (
+    <MarineVectorDataRow key={idx} row={row} onChange={props.dataChanged} onChangeStartTime={props.dataChangedStartTime} onChangeEndTime={props.dataChangedEndTime} idx={idx} />
+  ))
 
-    this.handleChange = this.handleChange.bind(this)
-  }
-
-  handleChange(idx: number, field: string, value: string) {
-    this.props.dataChanged(idx, field, parseInt(value))
-  }
-
-  handleStartTimeChange(idx: number, value: Date) {
-    this.props.dataChangedStartTime(idx, value)
-  }
-
-  handleEndTimeChange(idx: number, value: Date) {
-    this.props.dataChangedEndTime(idx, value)
-  }
-
-  render() {
-    const rows = []
-    for (const idx in this.props.data) {
-      const row = this.props.data[idx]
-      rows.push(
-        <MarineVectorDataRow
-          row={row}
-          onChange={this.handleChange}
-          onChangeEndTime={this.handleEndTimeChange}
-          onChangeStartTime={this.handleStartTimeChange}
-          key={idx}
-          idx={parseInt(idx)}
-        />
-      )
-    }
-    return (
-      <Table striped>
-        <thead>
-          <tr>
-            <td>From:</td>
-            <td>To:</td>
-            <td>Direction (&deg;)</td>
-            <td>Speed (knots)</td>
-            <td>Time Interval</td>
-            <td>Vector Direction (&deg;)</td>
-            <td>Vector Distance (NM)</td>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </Table>
-    )
-  }
+  return (
+    <Table striped>
+      <thead>
+        <tr>
+          <td>From:</td>
+          <td>To:</td>
+          <td>Direction (&deg;)</td>
+          <td>Speed (knots)</td>
+          <td>Time Interval</td>
+          <td>Vector Direction (&deg;)</td>
+          <td>Vector Distance (NM)</td>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </Table>
+  )
 }
 
 interface MarineLeewaySelectorProps {
@@ -284,63 +217,48 @@ interface MarineLeewaySelectorProps {
   leewayChange: (value: number) => void
 }
 
-class MarineLeewaySelector extends React.Component<MarineLeewaySelectorProps, never> {
-  constructor(props: MarineLeewaySelectorProps) {
-    super(props)
-
-    this.handleChange = this.handleChange.bind(this)
+const MarineLeewaySelector: React.FC<MarineLeewaySelectorProps> = (props) => {
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target
+    props.leewayChange(parseInt(value))
   }
 
-  handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const target = event.target
-    const value = target.value
-    this.props.leewayChange(parseInt(value))
-  }
+  const selectObjects = props.leewayData.map((leeway, idx) => (
+    <option key={idx} value={idx}>
+      {leeway.description}
+    </option>
+  ))
 
-  render() {
-    const selectObjects = []
-    for (const idx in this.props.leewayData) {
-      const leeway = this.props.leewayData[idx]
-      selectObjects.push(
-        <option key={idx} value={idx}>
-          {leeway.description}
-        </option>
-      )
-    }
-
-    return (
-      <Form.Select id="leeway_type" name="leeway_type" className="selectpicker" data-live-search="true" onChange={this.handleChange}>
-        {selectObjects}
-      </Form.Select>
-    )
-  }
+  return (
+    <Form.Select id="leeway_type" name="leeway_type" className="selectpicker" data-live-search="true" onChange={handleChange}>
+      {selectObjects}
+    </Form.Select>
+  )
 }
 
 interface MarineLeewayDisplayProps {
   leeway: LeewayDataInterface
 }
 
-class MarineLeewayDisplay extends React.Component<MarineLeewayDisplayProps, never> {
-  render() {
-    return (
-      <Table bordered>
-        <thead>
-          <tr>
-            <td>Multiplier</td>
-            <td>Modifier</td>
-            <td>Divergence</td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{this.props.leeway.multiplier}</td>
-            <td>{this.props.leeway.modifier}</td>
-            <td>{this.props.leeway.divergence}</td>
-          </tr>
-        </tbody>
-      </Table>
-    )
-  }
+const MarineLeewayDisplay: React.FC<MarineLeewayDisplayProps> = (props) => {
+  return (
+    <Table bordered>
+      <thead>
+        <tr>
+          <td>Multiplier</td>
+          <td>Modifier</td>
+          <td>Divergence</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{props.leeway.multiplier}</td>
+          <td>{props.leeway.modifier}</td>
+          <td>{props.leeway.divergence}</td>
+        </tr>
+      </tbody>
+    </Table>
+  )
 }
 
 interface MarineVectorsState {
@@ -353,9 +271,75 @@ interface MarineVectorsState {
   LKPLat: number
   LKPLon: number
   targetDescription: string
+  distance: number
+  bearing: number
 }
 
-export class MarineVectors extends React.Component<object, MarineVectorsState> {
+interface MarineVectorsProps {
+  data: MarineVectorsState
+  actions: {
+    updateField: (field: string, value: string) => void
+    updateLeewayData: (leewayIdx: number) => void
+    updateCurrentData: (idx: number, field: string, value: string) => void
+    updateCurrentTimeFrom: (idx: number, value: Date) => void
+    updateCurrentTimeTo: (idx: number, value: Date) => void
+    addCurrentVector: () => void
+    updateWindData: (idx: number, field: string, value: string) => void
+    updateWindTimeFrom: (idx: number, value: Date) => void
+    updateWindTimeTo: (idx: number, value: Date) => void
+    addWindVector: () => void
+  }
+}
+
+const MarineVectorsDisplay: React.FC<MarineVectorsProps> = (props) => {
+  const { data, actions } = props
+  return (
+    <div>
+      <InputDataTable
+        updateField={actions.updateField}
+        subject={data.subject}
+        LKP={data.LKP}
+        LKPLat={data.LKPLat}
+        LKPLon={data.LKPLon}
+        targetDescription={data.targetDescription}
+      />
+      <MarineLeewaySelector leewayData={data.leewayData} leewayChange={actions.updateLeewayData} />
+      <MarineLeewayDisplay leeway={data.selectedLeeway} />
+      <br />
+      Current Data:
+      <MarineVectorDataTable
+        data={data.currentVectors}
+        dataChanged={actions.updateCurrentData}
+        dataChangedStartTime={actions.updateCurrentTimeFrom}
+        dataChangedEndTime={actions.updateCurrentTimeTo}
+      />
+      <Button onClick={actions.addCurrentVector}>Add</Button>
+      <br />
+      Wind Data:
+      <MarineVectorDataTable
+        data={data.windVectors}
+        dataChanged={actions.updateWindData}
+        dataChangedStartTime={actions.updateWindTimeFrom}
+        dataChangedEndTime={actions.updateWindTimeTo}
+      />
+      <Button onClick={actions.addWindVector}>Add</Button>
+      <table>
+        <tbody>
+          <tr>
+            <td>Distance</td>
+            <td>{data.distance}</td>
+          </tr>
+          <tr>
+            <td>Bearing</td>
+            <td>{data.bearing}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+class MarineVectors extends React.Component<object, MarineVectorsState> {
   distance: number
   bearing: number
 
@@ -373,7 +357,9 @@ export class MarineVectors extends React.Component<object, MarineVectorsState> {
       LKP: '',
       LKPLat: 0.0,
       LKPLon: 0.0,
-      targetDescription: ''
+      targetDescription: '',
+      distance: 0,
+      bearing: 0
     }
 
     this.updateLeewayData = this.updateLeewayData.bind(this)
@@ -479,12 +465,12 @@ export class MarineVectors extends React.Component<object, MarineVectorsState> {
     }
   }
 
-  updateCurrentData(idx: number, field: string, value: number) {
+  updateCurrentData(idx: number, field: string, value: string) {
     if (field === 'direction' || field === 'speed') {
       this.setState(function (prevState) {
         if (idx < prevState.currentVectors.length) {
           const current = prevState.currentVectors[idx]
-          current[field] = value
+          current[field] = parseFloat(value)
         }
         return { currentVectors: prevState.currentVectors }
       })
@@ -511,12 +497,12 @@ export class MarineVectors extends React.Component<object, MarineVectorsState> {
     })
   }
 
-  updateWindData(idx: number, field: string, value: number) {
+  updateWindData(idx: number, field: string, value: string) {
     if (field === 'direction' || field === 'speed') {
       this.setState(function (prevState) {
         if (idx < prevState.windVectors.length) {
           const wind = prevState.windVectors[idx]
-          wind[field] = value
+          wind[field] = parseFloat(value)
         }
         return { windVectors: prevState.windVectors }
       })
@@ -545,49 +531,20 @@ export class MarineVectors extends React.Component<object, MarineVectorsState> {
 
   render() {
     this.recalculate()
-    return (
-      <div>
-        <InputDataTable
-          updateField={this.updateField}
-          subject={this.state.subject}
-          LKP={this.state.LKP}
-          LKPLat={this.state.LKPLat}
-          LKPLon={this.state.LKPLon}
-          targetDescription={this.state.targetDescription}
-        />
-        <MarineLeewaySelector leewayData={this.state.leewayData} leewayChange={this.updateLeewayData} />
-        <MarineLeewayDisplay leeway={this.state.selectedLeeway} />
-        <br />
-        Current Data:
-        <MarineVectorDataTable
-          data={this.state.currentVectors}
-          dataChanged={this.updateCurrentData}
-          dataChangedStartTime={this.updateCurrentTimeFrom}
-          dataChangedEndTime={this.updateCurrentTimeTo}
-        />
-        <Button onClick={this.addCurrentVector}>Add</Button>
-        <br />
-        Wind Data:
-        <MarineVectorDataTable
-          data={this.state.windVectors}
-          dataChanged={this.updateWindData}
-          dataChangedStartTime={this.updateWindTimeFrom}
-          dataChangedEndTime={this.updateWindTimeTo}
-        />
-        <Button onClick={this.addWindVector}>Add</Button>
-        <table>
-          <tbody>
-            <tr>
-              <td>Distance</td>
-              <td>{this.distance}</td>
-            </tr>
-            <tr>
-              <td>Bearing</td>
-              <td>{this.bearing}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    )
+    const actions = {
+      updateField: this.updateField,
+      updateCurrentData: this.updateCurrentData,
+      updateCurrentTimeFrom: this.updateCurrentTimeFrom,
+      updateCurrentTimeTo: this.updateCurrentTimeTo,
+      updateLeewayData: this.updateLeewayData,
+      updateWindData: this.updateWindData,
+      updateWindTimeFrom: this.updateWindTimeFrom,
+      updateWindTimeTo: this.updateWindTimeTo,
+      addCurrentVector: this.addCurrentVector,
+      addWindVector: this.addWindVector
+    }
+    return <MarineVectorsDisplay data={{ ...this.state, distance: this.distance, bearing: this.bearing }} actions={actions} />
   }
 }
+
+export { MarineVectors, MarineVectorsDisplay }
