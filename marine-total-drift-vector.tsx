@@ -498,15 +498,18 @@ class MarineVectors extends React.Component<object, MarineVectorsState> {
   }
 
   updateWindData(idx: number, field: string, value: string) {
-    if (field === 'direction' || field === 'speed') {
-      this.setState(function (prevState) {
-        if (idx < prevState.windVectors.length) {
-          const wind = prevState.windVectors[idx]
-          wind[field] = parseFloat(value)
-        }
-        return { windVectors: prevState.windVectors }
-      })
+    const allowedFields = ['direction', 'speed'];
+    if (!allowedFields.includes(field)) {
+      // Block prototype pollution attempts and any unexpected field.
+      return;
     }
+    this.setState(function (prevState) {
+      if (idx < prevState.windVectors.length) {
+        const wind = prevState.windVectors[idx]
+        wind[field] = parseFloat(value)
+      }
+      return { windVectors: prevState.windVectors }
+    })
   }
 
   updateWindTimeFrom(idx: number, value: Date) {
