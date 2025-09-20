@@ -467,12 +467,17 @@ class MarineVectors extends React.Component<object, MarineVectorsState> {
 
   updateCurrentData(idx: number, field: string, value: string) {
     if (field === 'direction' || field === 'speed') {
-      this.setState(function (prevState) {
-        if (idx < prevState.currentVectors.length) {
-          const current = prevState.currentVectors[idx]
-          current[field] = parseFloat(value)
+      const parsedValue = parseFloat(value)
+      if (isNaN(parsedValue)) {
+        return
+      }
+      this.setState((oldState) => {
+        if (idx >= 0 && idx < oldState.currentVectors.length) {
+          const updatedVectors = [...oldState.currentVectors]
+          updatedVectors[idx] = { ...updatedVectors[idx], [field]: parsedValue }
+          return { currentVectors: updatedVectors }
         }
-        return { currentVectors: prevState.currentVectors }
+        return oldState
       })
     }
   }
