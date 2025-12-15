@@ -28,7 +28,7 @@ jobs:
       - name: Remove other content
         run: rm -fr node_modules temp
       - name: Create PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Update based on main commit ${{ github.sha }}"
           delete-branch: true
