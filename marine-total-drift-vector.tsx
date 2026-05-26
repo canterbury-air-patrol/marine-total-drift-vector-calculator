@@ -144,7 +144,7 @@ interface MarineVectorDataRowProps {
   row: MarineTimeVector
   onChangeStartTime?: (assetIdx: number, value: Date) => void
   onChangeEndTime?: (assetIdx: number, value: Date) => void
-  onChange?: (assetIdx: number, field: string, value: string) => void
+  onChange?: (assetIdx: number, field: 'direction' | 'speed', value: string) => void
   idx: number
 }
 
@@ -184,7 +184,7 @@ const MarineVectorDataRow: React.FC<MarineVectorDataRowProps> = (props) => {
 
 interface MarineVectorDataTableProps {
   data: Array<MarineTimeVector>
-  dataChanged: (idx: number, field: string, value: string) => void
+  dataChanged: (idx: number, field: 'direction' | 'speed', value: string) => void
   dataChangedStartTime: (idx: number, value: Date) => void
   dataChangedEndTime: (idx: number, value: Date) => void
 }
@@ -280,11 +280,11 @@ interface MarineVectorsProps {
   actions: {
     updateField: (field: string, value: string) => void
     updateLeewayData: (leewayIdx: number) => void
-    updateCurrentData: (idx: number, field: string, value: string) => void
+    updateCurrentData: (idx: number, field: 'direction' | 'speed', value: string) => void
     updateCurrentTimeFrom: (idx: number, value: Date) => void
     updateCurrentTimeTo: (idx: number, value: Date) => void
     addCurrentVector: () => void
-    updateWindData: (idx: number, field: string, value: string) => void
+    updateWindData: (idx: number, field: 'direction' | 'speed', value: string) => void
     updateWindTimeFrom: (idx: number, value: Date) => void
     updateWindTimeTo: (idx: number, value: Date) => void
     addWindVector: () => void
@@ -465,13 +465,16 @@ class MarineVectors extends React.Component<object, MarineVectorsState> {
     }
   }
 
-  updateCurrentData(idx: number, field: string, value: string) {
+  updateCurrentData(idx: number, field: 'direction' | 'speed', value: string) {
     const parsedValue = parseFloat(value)
-    if ((field !== 'direction' && field !== 'speed') || isNaN(parsedValue)) return
+    if (isNaN(parsedValue)) return
     this.setState((oldState) => {
       if (idx < 0 || idx >= oldState.currentVectors.length) return null
-      ;(oldState.currentVectors[idx] as unknown as Record<string, unknown>)[field] = parsedValue
-      return { currentVectors: [...oldState.currentVectors] }
+      const updated = Object.assign(Object.create(Object.getPrototypeOf(oldState.currentVectors[idx])) as MarineVectorsCurrent, oldState.currentVectors[idx])
+      updated[field] = parsedValue
+      const currentVectors = [...oldState.currentVectors]
+      currentVectors[idx] = updated
+      return { currentVectors }
     })
   }
 
@@ -495,13 +498,16 @@ class MarineVectors extends React.Component<object, MarineVectorsState> {
     })
   }
 
-  updateWindData(idx: number, field: string, value: string) {
+  updateWindData(idx: number, field: 'direction' | 'speed', value: string) {
     const parsedValue = parseFloat(value)
-    if (!['direction', 'speed'].includes(field) || isNaN(parsedValue)) return
+    if (isNaN(parsedValue)) return
     this.setState((oldState) => {
       if (idx < 0 || idx >= oldState.windVectors.length) return null
-      ;(oldState.windVectors[idx] as unknown as Record<string, unknown>)[field] = parsedValue
-      return { windVectors: [...oldState.windVectors] }
+      const updated = Object.assign(Object.create(Object.getPrototypeOf(oldState.windVectors[idx])) as MarineVectorsWind, oldState.windVectors[idx])
+      updated[field] = parsedValue
+      const windVectors = [...oldState.windVectors]
+      windVectors[idx] = updated
+      return { windVectors }
     })
   }
 
