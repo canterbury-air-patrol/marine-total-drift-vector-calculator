@@ -466,20 +466,13 @@ class MarineVectors extends React.Component<object, MarineVectorsState> {
   }
 
   updateCurrentData(idx: number, field: string, value: string) {
-    if (field === 'direction' || field === 'speed') {
-      const parsedValue = parseFloat(value)
-      if (isNaN(parsedValue)) {
-        return
-      }
-      this.setState((oldState) => {
-        if (idx >= 0 && idx < oldState.currentVectors.length) {
-          const updatedVectors = [...oldState.currentVectors]
-          updatedVectors[idx] = { ...updatedVectors[idx], [field]: parsedValue }
-          return { currentVectors: updatedVectors }
-        }
-        return oldState
-      })
-    }
+    const parsedValue = parseFloat(value)
+    if ((field !== 'direction' && field !== 'speed') || isNaN(parsedValue)) return
+    this.setState((oldState) => {
+      if (idx < 0 || idx >= oldState.currentVectors.length) return null
+      ;(oldState.currentVectors[idx] as unknown as Record<string, unknown>)[field] = parsedValue
+      return { currentVectors: [...oldState.currentVectors] }
+    })
   }
 
   updateCurrentTimeFrom(idx: number, value: Date) {
@@ -503,18 +496,12 @@ class MarineVectors extends React.Component<object, MarineVectorsState> {
   }
 
   updateWindData(idx: number, field: string, value: string) {
-    const allowedFields = ['direction', 'speed']
-    if (!allowedFields.includes(field) || isNaN(parseFloat(value))) {
-      // Block prototype pollution attempts and any unexpected field.
-      return
-    }
+    const parsedValue = parseFloat(value)
+    if (!['direction', 'speed'].includes(field) || isNaN(parsedValue)) return
     this.setState((oldState) => {
-      if (idx >= 0 && idx < oldState.windVectors.length) {
-        const updatedVectors = [...oldState.windVectors]
-        updatedVectors[idx] = { ...updatedVectors[idx], [field]: parseFloat(value) }
-        return { windVectors: updatedVectors }
-      }
-      return oldState
+      if (idx < 0 || idx >= oldState.windVectors.length) return null
+      ;(oldState.windVectors[idx] as unknown as Record<string, unknown>)[field] = parsedValue
+      return { windVectors: [...oldState.windVectors] }
     })
   }
 
