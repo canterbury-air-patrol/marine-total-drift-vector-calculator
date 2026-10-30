@@ -191,7 +191,7 @@ interface MarineVectorDataTableProps {
 
 const MarineVectorDataTable: React.FC<MarineVectorDataTableProps> = (props) => {
   const rows = props.data.map((row, idx) => (
-    <MarineVectorDataRow key={idx} row={row} onChange={props.dataChanged} onChangeStartTime={props.dataChangedStartTime} onChangeEndTime={props.dataChangedEndTime} idx={idx} />
+    <MarineVectorDataRow key={row.idx} row={row} onChange={props.dataChanged} onChangeStartTime={props.dataChangedStartTime} onChangeEndTime={props.dataChangedEndTime} idx={idx} />
   ))
 
   return (
@@ -224,7 +224,7 @@ const MarineLeewaySelector: React.FC<MarineLeewaySelectorProps> = (props) => {
   }
 
   const selectObjects = props.leewayData.map((leeway, idx) => (
-    <option key={idx} value={idx}>
+    <option key={leeway.description} value={idx}>
       {leeway.description}
     </option>
   ))
